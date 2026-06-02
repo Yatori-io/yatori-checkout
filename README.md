@@ -9,23 +9,36 @@ A web component for seamless USDC stablecoin payments on Solana with QR code che
 
 ## Screenshots
 
-### Use cases
+<p align="center">
+  <sub>Desktop checkout — dialog and embedded modes</sub>
+</p>
 
-**Button** — Default desktop view with `useDialog=true`: the "YATORI PAY" button.
-
-<img src="./screenshots/button.png" alt="Button" width="720" />
-
-**Dialog** — After clicking the button, the modal shows the QR code, amount, and wallet address.
-
-<img src="./screenshots/dialog.png" alt="QR code dialog" width="720" />
-
-**Embedded** — Desktop with `useDialog=false`: QR and address shown directly (no button, no modal).
-
-<img src="./screenshots/embeded.png" alt="QR code embedded" width="720" />
-
-**Confirmed** — Payment confirmed: checkmark in the button (dialog mode) or checkmark with purple wave (embedded mode).
-
-<img src="./screenshots/confirmed.png" alt="Confirmed" width="720" />
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <strong>Button</strong><br />
+      <sub><code>useDialog=true</code> (default)</sub><br /><br />
+      <img src="./screenshots/button.png" alt="YATORI PAY button" width="300" />
+    </td>
+    <td align="center" width="50%">
+      <strong>Dialog</strong><br />
+      <sub>QR, amount, and wallet in modal</sub><br /><br />
+      <img src="./screenshots/dialog.png" alt="QR code in dialog" width="300" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <strong>Embedded</strong><br />
+      <sub><code>useDialog=false</code></sub><br /><br />
+      <img src="./screenshots/embeded.png" alt="Inline QR checkout" width="300" />
+    </td>
+    <td align="center" width="50%">
+      <strong>Confirmed</strong><br />
+      <sub>Payment complete</sub><br /><br />
+      <img src="./screenshots/confirmed.png" alt="Payment confirmed" width="300" />
+    </td>
+  </tr>
+</table>
 
 ## Installation
 ```bash
@@ -52,6 +65,30 @@ import 'yatori-checkout'
 ```
 
 > **Important:** The recipient wallet address must have at least 0.01 USDC already deposited for rent (USDC PDA on Solana).
+
+Optional product SKU (defaults to `000` when omitted):
+
+```html
+<yatori-checkout
+  wallet="G8RtxPyG2pdrAhrNRMgg7Hia8imCofdCYxvyWiNG14hx"
+  amount="9.99"
+  sku="001"
+></yatori-checkout>
+```
+
+## Mobile payment link (SKU)
+
+QR codes and mobile deeplinks use the Yatori mobile request format with **`type=sku`**. Checkout always sends SKU-style links so the [YATORI PAY](https://yatori.io/yatori-pay) app can recognize them.
+
+| Scenario | Example link |
+|----------|----------------|
+| Default (wallet + amount only) | `https://yatori.io/mobile/yatoriRequest?token=usdcBasic&to=G8RtxPyG2pdrAhrNRMgg7Hia8imCofdCYxvyWiNG14hx&amount=9.99&yid=4821a3b7&type=sku&sku=000` |
+| With `sku="001"` | `...&type=sku&sku=001` |
+
+- **`yid`** — Generated per QR session by the component (value changes each time).
+- **`sku`** — From the `sku` attribute; if missing or blank, **`000`** is used.
+
+This SKU field is designed for catalog and order tracking and will later be compatible with the **Yatori Merchant** platform, so merchants can align web checkout SKUs with their merchant catalog.
 
 ## Dialog Behavior
 
@@ -206,6 +243,7 @@ export default function MyYatoriCheckout() {
 |-----------|------|----------|---------|-------------|
 | `wallet` | string | Yes | - | Recipient wallet address (Solana). Must have at least 0.01 USDC already deposited for rent (USDC PDA). |
 | `amount` | number | Yes | - | Payment amount in USD decimal format (e.g., 9.99, must be between 0.01 and 9999.99) |
+| `sku` | string | No | `000` | Product SKU in the mobile payment link (`type=sku`). Omitted or empty uses `000`. Will later align with the Yatori Merchant platform. |
 | `useDialog` | boolean | No | `true` | When `true` and not on mobile, displays a "YATORI PAY" button that opens a centered dialog with the QR code. When `false`, displays the QR code directly. On mobile devices, always shows the deeplink button regardless of this setting. |
 
 ## Events
@@ -282,7 +320,8 @@ yatori-checkout {
 
 ## Features
 
-- ✅ QR code generation with Yatori branding
+- ✅ QR code generation with Yatori branding and SKU mobile links (`type=sku`, default SKU `000`)
+- ✅ Optional `sku` attribute for product identification (Yatori Merchant platform compatibility planned)
 - ✅ Dialog mode (default): Desktop users click a button to open a centered modal with QR code
 - ✅ Direct QR display: Option to show QR code directly without dialog (`useDialog="false"`)
 - ✅ WebSocket payment confirmation
@@ -294,6 +333,18 @@ yatori-checkout {
 ## Payment Method
 
 Payable with the **YATORI PAY** mobile app. Available for download on the [Apple App Store](https://apps.apple.com/us/app/yatori-pay/id6736435772) or [Google Play Store](https://play.google.com/store/apps/details?id=io.yatori.app). More info: [https://yatori.io/yatori-pay](https://yatori.io/yatori-pay)
+
+## Changelog
+
+### 1.1.0
+
+- SKU mobile payment links (`type=sku`, default `sku=000`) for YATORI PAY deeplinks and QR codes
+- Optional `sku` attribute on `<yatori-checkout>` (planned compatibility with Yatori Merchant)
+- README screenshot gallery layout and sizing
+
+### 1.0.1
+
+- Earlier stable release
 
 ## License
 

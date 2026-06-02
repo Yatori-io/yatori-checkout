@@ -20,6 +20,12 @@ export declare const YatoriCheckout: React.FC<{
     amount: string | number;
 
     /**
+     * Product SKU for the mobile payment link (`type=sku`). Empty or omitted defaults to `000`.
+     * @default "000"
+     */
+    sku?: string;
+
+    /**
      * When true and not on mobile, displays a "YATORI PAY" button that opens a centered dialog with the QR code.
      * When false, displays the QR code directly. On mobile devices, always shows the deeplink button regardless of this setting.
      * @default true

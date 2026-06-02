@@ -8,6 +8,8 @@ import yatoriLogo from '../assets/yatori-logo-new.png'
 export class YatoriCheckout extends LitElement {
   @property({ type: String }) wallet = ''
   @property({ type: Number }) amount = 0
+  /** Product SKU for mobile deeplink/QR. Empty or omitted defaults to `000`. */
+  @property({ type: String }) sku = '000'
   @property({
     type: Boolean,
     converter: { fromAttribute: (value) => value === null ? true : value !== 'false' }
@@ -525,6 +527,10 @@ export class YatoriCheckout extends LitElement {
       }
     }
 
+    if (this.hasInitialized && changedProperties.has('sku') && this.amountError === '') {
+      this.generateQRCode()
+    }
+
     // Start WebSocket when dialog opens
     if (changedProperties.has('dialogOpen') && this.dialogOpen && !this.isMobile) {
       this.startWebSocketConnection()
@@ -536,6 +542,11 @@ export class YatoriCheckout extends LitElement {
     }
   }
 
+  private resolveSku(): string {
+    const trimmed = this.sku?.trim()
+    return trimmed ? trimmed : '000'
+  }
+
   async generateQRCode() {
     const generateShortId = (): string => {
       const timestamp = Date.now().toString().slice(-4)
@@ -545,6 +556,7 @@ export class YatoriCheckout extends LitElement {
     this.yid = generateShortId()
     console.log('YATORI YID CREATED')
 
+    const sku = encodeURIComponent(this.resolveSku())
     const snakeEater = {
       token: 'usdcBasic',
       to: this.wallet,
@@ -552,7 +564,7 @@ export class YatoriCheckout extends LitElement {
       yid: this.yid,
     }
 
-    this.qrUrl = `https://yatori.io/mobile/yatoriRequest?token=${snakeEater.token}&to=${snakeEater.to}&amount=${snakeEater.amount}&yid=${snakeEater.yid}`
+    this.qrUrl = `https://yatori.io/mobile/yatoriRequest?token=${snakeEater.token}&to=${snakeEater.to}&amount=${snakeEater.amount}&yid=${snakeEater.yid}&type=sku&sku=${sku}`
 
     // Generate compact QR code with brand logo in center
     const qrCodeOptions: any = {

@@ -9,6 +9,7 @@ import type {
 interface YatoriCheckoutProps {
     wallet: string;
     amount: number;
+    sku?: string;
     onYatoriConfirmed?: (event: CustomEvent<YatoriConfirmedEventDetail>) => void;
     onYatoriAnimationComplete?: (event: CustomEvent<YatoriAnimationCompleteEventDetail>) => void;
 }
@@ -16,6 +17,7 @@ interface YatoriCheckoutProps {
 export const YatoriCheckout: React.FC<YatoriCheckoutProps> = ({
     wallet,
     amount,
+    sku,
     onYatoriConfirmed,
     onYatoriAnimationComplete
 }) => {
@@ -47,6 +49,7 @@ export const YatoriCheckout: React.FC<YatoriCheckoutProps> = ({
     return React.createElement('yatori-checkout', {
         ref: checkoutRef,
         wallet,
-        amount
+        amount,
+        ...(sku !== undefined && { sku }),
     });
 };

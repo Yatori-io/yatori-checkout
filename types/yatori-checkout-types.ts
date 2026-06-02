@@ -11,6 +11,11 @@ export interface YatoriCheckoutElement extends HTMLElement {
      */
     amount: string | number;
     /**
+     * Product SKU encoded in the mobile payment link (`type=sku`). Empty or omitted defaults to `000`.
+     * @default "000"
+     */
+    sku?: string;
+    /**
      * When true and not on mobile, displays a "YATORI PAY" button that opens a centered dialog with the QR code.
      * When false, displays the QR code directly. On mobile devices, always shows the deeplink button regardless of this setting.
      * @default true
@@ -37,6 +42,7 @@ declare global {
                 React.HTMLAttributes<YatoriCheckoutElement> & {
                     wallet: string;
                     amount: string | number;
+                    sku?: string;
                     useDialog?: boolean;
                     onYatoriConfirmed?: (event: CustomEvent<YatoriConfirmedEventDetail>) => void;
                     onYatoriAnimationComplete?: (event: CustomEvent<YatoriAnimationCompleteEventDetail>) => void;
