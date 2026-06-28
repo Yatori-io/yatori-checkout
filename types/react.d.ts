@@ -20,10 +20,11 @@ export declare const YatoriCheckout: React.FC<{
     amount: string | number;
 
     /**
-     * Product SKU for the mobile payment link (`type=sku`). Empty or omitted defaults to `000`.
-     * @default "000"
+     * Payment note for the mobile payment link (`type=note`). Letters, numbers, and spaces only; max 50 characters. Empty defaults to `checkout`.
+     * @default "checkout"
+     * @maxLength 50
      */
-    sku?: string;
+    note?: string;
 
     /**
      * When true and not on mobile, displays a "YATORI PAY" button that opens a centered dialog with the QR code.

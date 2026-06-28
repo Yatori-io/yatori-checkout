@@ -66,29 +66,48 @@ import 'yatori-checkout'
 
 > **Important:** The recipient wallet address must have at least 0.01 USDC already deposited for rent (USDC PDA on Solana).
 
-Optional product SKU (defaults to `000` when omitted):
+Optional **`note`** for the mobile payment description (shown in YATORI PAY when the customer scans or opens the link):
 
 ```html
 <yatori-checkout
   wallet="G8RtxPyG2pdrAhrNRMgg7Hia8imCofdCYxvyWiNG14hx"
   amount="9.99"
-  sku="001"
+  note="schfifty five"
 ></yatori-checkout>
 ```
 
-## Mobile payment link (SKU)
+**`note` rules**
 
-QR codes and mobile deeplinks use the Yatori mobile request format with **`type=sku`**. Checkout always sends SKU-style links so the [YATORI PAY](https://yatori.io/yatori-pay) app can recognize them.
+| Rule | Behavior |
+|------|----------|
+| Default | `checkout` when the attribute is omitted or empty after sanitization |
+| Allowed characters | Letters (`a–z`, `A–Z`), numbers (`0–9`), and spaces |
+| Special characters | Stripped automatically (e.g. `@`, `#`, `!`, `-`) |
+| Max length | **50 characters** — longer values are truncated |
+| Spaces | Allowed; encoded as `+` in the mobile URL |
+
+```html
+<!-- Truncated to 50 chars; "!" removed -->
+<yatori-checkout
+  wallet="G8RtxPyG2pdrAhrNRMgg7Hia8imCofdCYxvyWiNG14hx"
+  amount="0.55"
+  note="Order 42 - table 7 extra long description that gets cut off"
+></yatori-checkout>
+```
+
+## Mobile payment link (note)
+
+QR codes and mobile deeplinks use the Yatori mobile request format with **`type=note`**. Checkout always sends note-style links so the [YATORI PAY](https://yatori.io/yatori-pay) app can recognize them.
 
 | Scenario | Example link |
 |----------|----------------|
-| Default (wallet + amount only) | `https://yatori.io/mobile/yatoriRequest?token=usdcBasic&to=G8RtxPyG2pdrAhrNRMgg7Hia8imCofdCYxvyWiNG14hx&amount=9.99&yid=4821a3b7&type=sku&sku=000` |
-| With `sku="001"` | `...&type=sku&sku=001` |
+| Default (wallet + amount only) | `https://yatori.io/mobile/yatoriRequest?token=usdcBasic&to=G8RtxPyG2pdrAhrNRMgg7Hia8imCofdCYxvyWiNG14hx&amount=9.99&yid=4821a3b7&type=note&note=checkout` |
+| With `note="schfifty five"` | `...&type=note&note=schfifty+five` |
 
 - **`yid`** — Generated per QR session by the component (value changes each time).
-- **`sku`** — From the `sku` attribute; if missing or blank, **`000`** is used.
+- **`note`** — From the `note` attribute after sanitization and truncation (max 50 chars). Default **`checkout`**.
 
-This SKU field is designed for catalog and order tracking and will later be compatible with the **Yatori Merchant** platform, so merchants can align web checkout SKUs with their merchant catalog.
+This note field will later be compatible with the **Yatori Merchant** platform for order and payment descriptions.
 
 ## Dialog Behavior
 
@@ -243,7 +262,7 @@ export default function MyYatoriCheckout() {
 |-----------|------|----------|---------|-------------|
 | `wallet` | string | Yes | - | Recipient wallet address (Solana). Must have at least 0.01 USDC already deposited for rent (USDC PDA). |
 | `amount` | number | Yes | - | Payment amount in USD decimal format (e.g., 9.99, must be between 0.01 and 9999.99) |
-| `sku` | string | No | `000` | Product SKU in the mobile payment link (`type=sku`). Omitted or empty uses `000`. Will later align with the Yatori Merchant platform. |
+| `note` | string | No | `checkout` | Payment note in the mobile link (`type=note`). Letters, numbers, and spaces only; max **50** characters (truncated if longer). Special characters are stripped. Will later align with the Yatori Merchant platform. |
 | `useDialog` | boolean | No | `true` | When `true` and not on mobile, displays a "YATORI PAY" button that opens a centered dialog with the QR code. When `false`, displays the QR code directly. On mobile devices, always shows the deeplink button regardless of this setting. |
 
 ## Events
@@ -320,8 +339,8 @@ yatori-checkout {
 
 ## Features
 
-- ✅ QR code generation with Yatori branding and SKU mobile links (`type=sku`, default SKU `000`)
-- ✅ Optional `sku` attribute for product identification (Yatori Merchant platform compatibility planned)
+- ✅ QR code generation with Yatori branding and note mobile links (`type=note`, default note `checkout`)
+- ✅ Optional `note` attribute (letters, numbers, spaces; max 50 characters; Yatori Merchant platform compatibility planned)
 - ✅ Dialog mode (default): Desktop users click a button to open a centered modal with QR code
 - ✅ Direct QR display: Option to show QR code directly without dialog (`useDialog="false"`)
 - ✅ WebSocket payment confirmation
@@ -335,6 +354,12 @@ yatori-checkout {
 Payable with the **YATORI PAY** mobile app. Available for download on the [Apple App Store](https://apps.apple.com/us/app/yatori-pay/id6736435772) or [Google Play Store](https://play.google.com/store/apps/details?id=io.yatori.app). More info: [https://yatori.io/yatori-pay](https://yatori.io/yatori-pay)
 
 ## Changelog
+
+### 1.2.0
+
+- Mobile links use `type=note` and `note=` instead of SKU format
+- Optional `note` attribute (letters, numbers, and spaces; max 50 characters; special characters stripped; default `checkout`)
+- Replaces `sku` attribute from 1.1.0
 
 ### 1.1.0
 

@@ -6,10 +6,12 @@ import yatoriLogo from '../assets/yatori-logo-new.png'
 
 @customElement('yatori-checkout')
 export class YatoriCheckout extends LitElement {
+  private static readonly NOTE_MAX_LENGTH = 50
+
   @property({ type: String }) wallet = ''
   @property({ type: Number }) amount = 0
-  /** Product SKU for mobile deeplink/QR. Empty or omitted defaults to `000`. */
-  @property({ type: String }) sku = '000'
+  /** Payment note for mobile deeplink/QR (`type=note`). Letters, numbers, and spaces only; max 50 chars. Empty defaults to `checkout`. */
+  @property({ type: String }) note = 'checkout'
   @property({
     type: Boolean,
     converter: { fromAttribute: (value) => value === null ? true : value !== 'false' }
@@ -527,7 +529,7 @@ export class YatoriCheckout extends LitElement {
       }
     }
 
-    if (this.hasInitialized && changedProperties.has('sku') && this.amountError === '') {
+    if (this.hasInitialized && changedProperties.has('note') && this.amountError === '') {
       this.generateQRCode()
     }
 
@@ -542,9 +544,15 @@ export class YatoriCheckout extends LitElement {
     }
   }
 
-  private resolveSku(): string {
-    const trimmed = this.sku?.trim()
-    return trimmed ? trimmed : '000'
+  private resolveNote(): string {
+    const trimmed = this.note?.trim() ?? ''
+    const sanitized = trimmed
+      .replace(/[^a-zA-Z0-9 ]+/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, YatoriCheckout.NOTE_MAX_LENGTH)
+      .trim()
+    return sanitized || 'checkout'
   }
 
   async generateQRCode() {
@@ -556,7 +564,7 @@ export class YatoriCheckout extends LitElement {
     this.yid = generateShortId()
     console.log('YATORI YID CREATED')
 
-    const sku = encodeURIComponent(this.resolveSku())
+    const note = encodeURIComponent(this.resolveNote())
     const snakeEater = {
       token: 'usdcBasic',
       to: this.wallet,
@@ -564,7 +572,7 @@ export class YatoriCheckout extends LitElement {
       yid: this.yid,
     }
 
-    this.qrUrl = `https://yatori.io/mobile/yatoriRequest?token=${snakeEater.token}&to=${snakeEater.to}&amount=${snakeEater.amount}&yid=${snakeEater.yid}&type=sku&sku=${sku}`
+    this.qrUrl = `https://yatori.io/mobile/yatoriRequest?token=${snakeEater.token}&to=${snakeEater.to}&amount=${snakeEater.amount}&yid=${snakeEater.yid}&type=note&note=${note}`
 
     // Generate compact QR code with brand logo in center
     const qrCodeOptions: any = {
