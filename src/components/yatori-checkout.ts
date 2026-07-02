@@ -7,6 +7,7 @@ import yatoriLogo from '../assets/yatori-logo-new.png'
 @customElement('yatori-checkout')
 export class YatoriCheckout extends LitElement {
   private static readonly NOTE_MAX_LENGTH = 50
+  private static readonly SOLANA_PLACE_WALLET = 'AL3iHPM8s9g4epZJXm8RkBuACZNh1JVWxA5BmsSiMKM5'
 
   @property({ type: String }) wallet = ''
   @property({ type: Number }) amount = 0
@@ -32,6 +33,7 @@ export class YatoriCheckout extends LitElement {
   private hasInitialized = false
   private wsConnection: WebSocket | null = null
   private confirmingTimeoutId: ReturnType<typeof setTimeout> | null = null
+  private static blackLogoPromise: Promise<string> | null = null
 
   isMobileDevice(): boolean {
     return /android|iphone|ipad|ipod/i.test(navigator.userAgent)
@@ -82,20 +84,55 @@ export class YatoriCheckout extends LitElement {
     margin: 12px auto;
   }
 
+  .qr-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-shrink: 0;
+    width: fit-content;
+  }
+
   .qr-wrapper {
     opacity: 1;
     transition: opacity 0.5s ease;
-    background: #ffffff;
+    background: #c1ff72;
     border-radius: 16px;
-    padding: 10px;
-    display: inline-block;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     box-sizing: border-box;
+    flex-shrink: 0;
+    width: 278px;
+    height: 278px;
+    box-shadow:
+      0 3px 6px rgba(0, 0, 0, 0.12),
+      0 10px 22px rgba(0, 0, 0, 0.2),
+      0 18px 36px rgba(0, 0, 0, 0.1);
   }
 
-  .qr-wrapper img {
-    margin: 0 auto;
+  .qr-card {
     display: block;
+    border-radius: 12px;
+    background: #c1ff72;
+    overflow: hidden;
+    line-height: 0;
+    width: 250px;
+    height: 250px;
+    flex-shrink: 0;
+  }
+
+  .qr-card img {
+    margin: 0;
+    display: block;
+    width: 250px;
+    height: 250px;
+    max-width: none;
+    min-width: 250px;
+    min-height: 250px;
+    object-fit: contain;
   }
 
   .qr-wrapper.fade-out {
@@ -113,9 +150,25 @@ export class YatoriCheckout extends LitElement {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   }
 
-  .flat-qr .qr-wrapper {
-    background: #ffffff;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  .flat-qr .amount-pill {
+    color: #ffffff;
+  }
+
+  .amount-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background: rgba(100, 108, 255, 0.14);
+    border: none;
+    box-shadow: none;
+    padding: 10px 22px;
+    color: #191818;
+    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
   }
 
   .flat-qr .dialog-amount {
@@ -328,7 +381,7 @@ export class YatoriCheckout extends LitElement {
   }
 
 .deeplink-btn {
-  background: white;
+  background: #c1ff72;
   color: #1c1c1c;
   border: var(--yp-button-border-width, 1px) solid var(--yp-button-border-color, black);
   border-radius: var(--yp-button-border-radius, 0px);
@@ -363,11 +416,11 @@ export class YatoriCheckout extends LitElement {
 }
 
 .deeplink-btn:hover:not(:disabled) {
-  background: #f5f5f5;
+  background: #b3f060;
 }
 
 .deeplink-btn:active:not(:disabled) {
-  background: white;
+  background: #a8e855;
 }
 
 .deeplink-btn:disabled {
@@ -555,6 +608,80 @@ export class YatoriCheckout extends LitElement {
     return sanitized || 'checkout'
   }
 
+  private walletDisplayLabel(): string {
+    if (this.wallet === YatoriCheckout.SOLANA_PLACE_WALLET) {
+      return 'Solana Place'
+    }
+    return `${this.wallet.slice(0, 4)}...${this.wallet.slice(-4)}`
+  }
+
+  private formatAmountPill(): string | null {
+    const amount = Number(this.amount)
+    if (!Number.isFinite(amount)) {
+      return null
+    }
+    const floored = Math.floor(amount * 100) / 100
+    return `$${floored.toFixed(2)}`
+  }
+
+  private renderAmountPill() {
+    const label = this.formatAmountPill()
+    if (label === null) {
+      return ''
+    }
+    return html`<div class="amount-pill">${label}</div>`
+  }
+
+  private renderQrContent() {
+    if (this.isConfirming || this.confirmingError) {
+      if (this.confirmingError) {
+        return html`<div class="confirming-spinner-wrapper"><div class="confirming-error">${this.confirmingError}</div></div>`
+      }
+      return html`<div class="confirming-spinner-wrapper"><div class="confirming-spinner"></div></div>`
+    }
+
+    return html`
+      <div class="qr-wrapper">
+        ${this.qrCodeData
+          ? html`<div class="qr-card"><img src="${this.qrCodeData}" alt="Yatori QR Code" /></div>`
+          : html`<p>Loading QR…</p>`}
+      </div>
+    `
+  }
+
+  private renderQrStack() {
+    return html`
+      <div class="qr-stack">
+        ${this.renderAmountPill()}
+        ${this.renderQrContent()}
+      </div>
+    `
+  }
+
+  private getBlackLogoDataUrl(): Promise<string> {
+    if (!YatoriCheckout.blackLogoPromise) {
+      YatoriCheckout.blackLogoPromise = new Promise((resolve, reject) => {
+        const img = new Image()
+        img.onload = () => {
+          const canvas = document.createElement('canvas')
+          canvas.width = img.width
+          canvas.height = img.height
+          const ctx = canvas.getContext('2d')
+          if (!ctx) {
+            reject(new Error('Could not create logo canvas context'))
+            return
+          }
+          ctx.filter = 'brightness(0)'
+          ctx.drawImage(img, 0, 0)
+          resolve(canvas.toDataURL('image/png'))
+        }
+        img.onerror = () => reject(new Error('Could not load Yatori logo'))
+        img.src = yatoriLogo
+      })
+    }
+    return YatoriCheckout.blackLogoPromise
+  }
+
   async generateQRCode() {
     const generateShortId = (): string => {
       const timestamp = Date.now().toString().slice(-4)
@@ -574,23 +701,25 @@ export class YatoriCheckout extends LitElement {
 
     this.qrUrl = `https://yatori.io/mobile/yatoriRequest?token=${snakeEater.token}&to=${snakeEater.to}&amount=${snakeEater.amount}&yid=${snakeEater.yid}&type=note&note=${note}`
 
+    const blackLogo = await this.getBlackLogoDataUrl()
+
     // Generate compact QR code with brand logo in center
     const qrCodeOptions: any = {
       width: 250,
       height: 250,
       data: this.qrUrl,
       margin: 0,
-      image: yatoriLogo,
+      image: blackLogo,
       dotsOptions: {
         color: '#000000',
         type: 'dots'
       },
       backgroundOptions: {
-        color: '#ffffff'
+        color: '#c1ff72'
       },
       imageOptions: {
         margin: 0,
-        imageSize: .5,
+        imageSize: 0.32,
         hideBackgroundDots: true,
       },
       cornersSquareOptions: {
@@ -647,7 +776,7 @@ export class YatoriCheckout extends LitElement {
       }
     }
 
-    const GATE_URL = 'wss://zanshin.fly.dev/confirmed'
+    const GATE_URL = 'ws://localhost:8080/confirmed'
     const wsYatori = new WebSocket(GATE_URL)
     this.wsConnection = wsYatori
 
@@ -763,16 +892,16 @@ export class YatoriCheckout extends LitElement {
             <div class="flat-qr flat-confirmed">
               <div class="dialog-amount">Payment Complete</div>
               <div class="dialog-qr-row">
-                <div class="dialog-wallet-vertical">${this.wallet.slice(0, 4)}...${this.wallet.slice(-4)}</div>
+                <div class="dialog-wallet-vertical">${this.walletDisplayLabel()}</div>
                 <div class="flat-confirmed-inner">
                   <svg viewBox="0 0 100 100" style="shape-rendering: geometricPrecision;">
                     <circle cx="50" cy="50" r="40" fill="none" stroke="#646CFF" stroke-width="6" class="animate-draw-circle"/>
                     <path d="M 30 50 L 45 65 L 75 30" fill="none" stroke="#646CFF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" class="checkmark-path" style="stroke-dasharray: 55; stroke-dashoffset: 55;"/>
                   </svg>
                 </div>
-                <div class="dialog-wallet-vertical-right">${this.wallet.slice(0, 4)}...${this.wallet.slice(-4)}</div>
+                <div class="dialog-wallet-vertical-right">${this.walletDisplayLabel()}</div>
               </div>
-              <div class="dialog-wallet-bottom">${this.wallet.slice(0, 4)}...${this.wallet.slice(-4)}</div>
+              <div class="dialog-wallet-bottom">${this.walletDisplayLabel()}</div>
             </div>
           `
           : html`
@@ -819,22 +948,12 @@ export class YatoriCheckout extends LitElement {
                       }
                     }}>
                         <div class="dialog-content">
-                          <div class="dialog-amount">$${this.amount} USDC</div>
                           <div class="dialog-qr-row">
-                            <div class="dialog-wallet-vertical">${this.wallet.slice(0, 4)}...${this.wallet.slice(-4)}</div>
-                            ${this.isConfirming || this.confirmingError
-                      ? this.confirmingError
-                        ? html`<div class="confirming-spinner-wrapper"><div class="confirming-error">${this.confirmingError}</div></div>`
-                        : html`<div class="confirming-spinner-wrapper"><div class="confirming-spinner"></div></div>`
-                      : html`
-                            <div class="qr-wrapper">
-                              ${this.qrCodeData
-                          ? html`<img src="${this.qrCodeData}" alt="Yatori QR Code" />`
-                          : html`<p>Loading QR…</p>`}
-                            </div>`}
-                            <div class="dialog-wallet-vertical-right">${this.wallet.slice(0, 4)}...${this.wallet.slice(-4)}</div>
+                            <div class="dialog-wallet-vertical">${this.walletDisplayLabel()}</div>
+                            ${this.renderQrStack()}
+                            <div class="dialog-wallet-vertical-right">${this.walletDisplayLabel()}</div>
                           </div>
-                          <div class="dialog-wallet-bottom">${this.wallet.slice(0, 4)}...${this.wallet.slice(-4)}</div>
+                          <div class="dialog-wallet-bottom">${this.walletDisplayLabel()}</div>
                           <button
                             class="dialog-close-btn"
                             @click=${() => this.dialogOpen = false}
@@ -847,22 +966,12 @@ export class YatoriCheckout extends LitElement {
                   `
                 : html`
                   <div class="flat-qr">
-                    <div class="dialog-amount">$${this.amount} USDC</div>
                     <div class="dialog-qr-row">
-                      <div class="dialog-wallet-vertical">${this.wallet.slice(0, 4)}...${this.wallet.slice(-4)}</div>
-                      ${this.isConfirming || this.confirmingError
-                    ? this.confirmingError
-                      ? html`<div class="confirming-spinner-wrapper"><div class="confirming-error">${this.confirmingError}</div></div>`
-                      : html`<div class="confirming-spinner-wrapper"><div class="confirming-spinner"></div></div>`
-                    : html`
-                      <div class="qr-wrapper">
-                        ${this.qrCodeData
-                        ? html`<img src="${this.qrCodeData}" alt="Yatori QR Code" />`
-                        : html`<p>Loading QR…</p>`}
-                      </div>`}
-                      <div class="dialog-wallet-vertical-right">${this.wallet.slice(0, 4)}...${this.wallet.slice(-4)}</div>
+                      <div class="dialog-wallet-vertical">${this.walletDisplayLabel()}</div>
+                      ${this.renderQrStack()}
+                      <div class="dialog-wallet-vertical-right">${this.walletDisplayLabel()}</div>
                     </div>
-                    <div class="dialog-wallet-bottom">${this.wallet.slice(0, 4)}...${this.wallet.slice(-4)}</div>
+                    <div class="dialog-wallet-bottom">${this.walletDisplayLabel()}</div>
                   </div>
                 `}
           `}
