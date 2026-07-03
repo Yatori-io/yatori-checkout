@@ -10,7 +10,7 @@ A web component for seamless USDC stablecoin payments on Solana with QR code che
 ## Screenshots
 
 <p align="center">
-  <sub>Desktop checkout — dialog and embedded modes</sub>
+  <sub>Desktop checkout — lime YATORI PAY button, amount pill, and QR</sub>
 </p>
 
 <table>
@@ -18,24 +18,24 @@ A web component for seamless USDC stablecoin payments on Solana with QR code che
     <td align="center" width="50%">
       <strong>Button</strong><br />
       <sub><code>useDialog=true</code> (default)</sub><br /><br />
-      <img src="./screenshots/button.png" alt="YATORI PAY button" width="300" />
+      <img src="./screenshots/button.png" alt="Lime YATORI PAY button" width="300" />
     </td>
     <td align="center" width="50%">
       <strong>Dialog</strong><br />
-      <sub>QR, amount, and wallet in modal</sub><br /><br />
-      <img src="./screenshots/dialog.png" alt="QR code in dialog" width="300" />
+      <sub>Amount pill, lime QR, and wallet in modal</sub><br /><br />
+      <img src="./screenshots/dialog.png" alt="QR code in dialog with amount pill" width="300" />
     </td>
   </tr>
   <tr>
     <td align="center" width="50%">
       <strong>Embedded</strong><br />
       <sub><code>useDialog=false</code></sub><br /><br />
-      <img src="./screenshots/embeded.png" alt="Inline QR checkout" width="300" />
+      <img src="./screenshots/embeded.png" alt="Inline lime QR checkout" width="300" />
     </td>
     <td align="center" width="50%">
       <strong>Confirmed</strong><br />
       <sub>Payment complete</sub><br /><br />
-      <img src="./screenshots/confirmed.png" alt="Payment confirmed" width="300" />
+      <img src="./screenshots/confirmed.png" alt="Confirmed payment checkmark" width="300" />
     </td>
   </tr>
 </table>
@@ -339,6 +339,7 @@ yatori-checkout {
 
 ## Features
 
+- ✅ Lime YATORI PAY button and QR styling (`#c1ff72`) with amount pill overlay
 - ✅ QR code generation with Yatori branding and note mobile links (`type=note`, default note `checkout`)
 - ✅ Optional `note` attribute (letters, numbers, spaces; max 50 characters; Yatori Merchant platform compatibility planned)
 - ✅ Dialog mode (default): Desktop users click a button to open a centered modal with QR code
@@ -354,6 +355,14 @@ yatori-checkout {
 Payable with the **YATORI PAY** mobile app. Available for download on the [Apple App Store](https://apps.apple.com/us/app/yatori-pay/id6736435772) or [Google Play Store](https://play.google.com/store/apps/details?id=io.yatori.app). More info: [https://yatori.io/yatori-pay](https://yatori.io/yatori-pay)
 
 ## Changelog
+
+### 1.3.0
+
+- Lime YATORI PAY button and QR styling (`#c1ff72`)
+- Amount pill overlay above QR (floor to 2 decimals, primary tint capsule)
+- Black center logo, lime QR background, wrapper box shadow
+- Solana Place label for known destination wallet
+- Updated README screenshots
 
 ### 1.2.0
 

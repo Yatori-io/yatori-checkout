@@ -776,7 +776,7 @@ export class YatoriCheckout extends LitElement {
       }
     }
 
-    const GATE_URL = 'ws://localhost:8080/confirmed'
+    const GATE_URL = 'wss://zanshin.fly.dev/confirmed'
     const wsYatori = new WebSocket(GATE_URL)
     this.wsConnection = wsYatori
 
