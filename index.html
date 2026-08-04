@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,10 +8,31 @@
       * {
         box-sizing: border-box;
       }
+
+      html[data-theme="dark"] {
+        --bg: #1a1a1a;
+        --text: #eee;
+        --muted: #999;
+        --surface: #2a2a2a;
+        --surface-hover: #333;
+        --border: #444;
+        --code-bg: #2a2a2a;
+      }
+
+      html[data-theme="light"] {
+        --bg: #f4f4f5;
+        --text: #18181b;
+        --muted: #71717a;
+        --surface: #ffffff;
+        --surface-hover: #f0f0f2;
+        --border: #d4d4d8;
+        --code-bg: #e4e4e7;
+      }
+
       body {
         font-family: system-ui, sans-serif;
-        background: #1a1a1a;
-        color: #eee;
+        background: var(--bg);
+        color: var(--text);
         min-height: 100vh;
         margin: 0;
         padding: 24px;
@@ -19,15 +40,19 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
+        transition: background 0.2s ease, color 0.2s ease;
       }
       h1 {
         font-size: 1.25rem;
         margin-bottom: 8px;
       }
       p {
-        color: #999;
+        color: var(--muted);
         font-size: 0.875rem;
         margin: 0 0 24px;
+      }
+      code {
+        color: var(--muted);
       }
       .wrap {
         width: 100%;
@@ -36,6 +61,7 @@
       .toggle-row {
         display: flex;
         align-items: center;
+        flex-wrap: wrap;
         gap: 12px;
         margin-bottom: 16px;
       }
@@ -43,28 +69,30 @@
         padding: 8px 14px;
         font-size: 13px;
         border-radius: 8px;
-        border: 1px solid #444;
-        background: #2a2a2a;
-        color: #eee;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--text);
         cursor: pointer;
+        transition: background 0.15s ease;
       }
       .toggle-row button:hover {
-        background: #333;
+        background: var(--surface-hover);
       }
       .toggle-row span {
-        color: #999;
+        color: var(--muted);
         font-size: 0.875rem;
       }
 
       #log {
         margin-top: 24px;
         padding: 12px;
-        background: #2a2a2a;
+        background: var(--code-bg);
         border-radius: 8px;
         font-size: 12px;
         font-family: monospace;
         max-height: 200px;
         overflow: auto;
+        color: var(--text);
       }
       #log:empty {
         display: none;
@@ -77,7 +105,12 @@
   <body>
     <div class="wrap">
       <h1>Yatori Checkout</h1>
-      <p><code> Local test page </code></p>
+      <p><code>Local test page</code></p>
+
+      <div class="toggle-row">
+        <button type="button" id="toggle-theme">Toggle theme</button>
+        <span id="theme-state">theme: dark</span>
+      </div>
 
       <div class="toggle-row">
         <button type="button" id="toggle-dialog">Toggle useDialog</button>
@@ -97,8 +130,20 @@
     <script type="module">
       const checkout = document.getElementById("checkout");
       const logEl = document.getElementById("log");
+      const root = document.documentElement;
 
       let isOpen = true;
+      let theme = root.getAttribute("data-theme") || "dark";
+
+      function setTheme(next) {
+        theme = next;
+        root.setAttribute("data-theme", theme);
+        document.getElementById("theme-state").textContent = "theme: " + theme;
+      }
+
+      function toggleTheme() {
+        setTheme(theme === "dark" ? "light" : "dark");
+      }
 
       function toggle() {
         isOpen = !isOpen;
@@ -107,6 +152,7 @@
           "useDialog: " + isOpen;
       }
 
+      setTheme(theme);
       checkout.useDialog = isOpen;
       document.getElementById("dialog-state").textContent =
         "useDialog: " + isOpen;
@@ -125,9 +171,8 @@
         log("yatori-animation-complete", e.detail);
       });
 
-      document
-        .getElementById("toggle-dialog")
-        .addEventListener("click", toggle);
+      document.getElementById("toggle-dialog").addEventListener("click", toggle);
+      document.getElementById("toggle-theme").addEventListener("click", toggleTheme);
     </script>
   </body>
 </html>

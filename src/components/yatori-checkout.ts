@@ -150,18 +150,15 @@ export class YatoriCheckout extends LitElement {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   }
 
-  .flat-qr .amount-pill {
-    color: #ffffff;
-  }
-
   .amount-pill {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     border-radius: 9999px;
-    background: rgba(100, 108, 255, 0.14);
+    /* Solid soft primary tint — readable over light or dark host backgrounds */
+    background: #e8eaff;
     border: none;
-    box-shadow: none;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
     padding: 10px 22px;
     color: #191818;
     font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -693,13 +690,12 @@ export class YatoriCheckout extends LitElement {
 
     const note = encodeURIComponent(this.resolveNote())
     const snakeEater = {
-      token: 'usdcBasic',
       to: this.wallet,
       amount: this.amount,
       yid: this.yid,
     }
 
-    this.qrUrl = `https://yatori.io/mobile/yatoriRequest?token=${snakeEater.token}&to=${snakeEater.to}&amount=${snakeEater.amount}&yid=${snakeEater.yid}&type=note&note=${note}`
+    this.qrUrl = `https://yatori.io/mobile/yatoriRequest?to=${snakeEater.to}&amount=${snakeEater.amount}&yid=${snakeEater.yid}&type=note&note=${note}`
 
     const blackLogo = await this.getBlackLogoDataUrl()
 

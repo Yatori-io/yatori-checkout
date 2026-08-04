@@ -3,7 +3,7 @@ import React from 'react';
 // Web Component Element Interface
 export interface YatoriCheckoutElement extends HTMLElement {
     /**
-     * Recipient wallet address (Solana). Must have at least 0.01 USDC already deposited for rent (USDC PDA).
+     * Recipient wallet address (Solana).
      */
     wallet: string;
     /**

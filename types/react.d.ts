@@ -7,7 +7,7 @@ import { YatoriCheckoutElement, YatoriConfirmedEventDetail, YatoriAnimationCompl
  */
 export declare const YatoriCheckout: React.FC<{
     /**
-     * Recipient Solana wallet address 
+     * Recipient Solana wallet address
      * @example "7PXJH9yeqy7LG7aUFaVn8N4m1Zu8U9a8sJKkUzqDPsb5"
      */
     wallet: string;

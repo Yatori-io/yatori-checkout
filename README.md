@@ -64,8 +64,6 @@ import 'yatori-checkout'
 ></yatori-checkout>
 ```
 
-> **Important:** The recipient wallet address must have at least 0.01 USDC already deposited for rent (USDC PDA on Solana).
-
 Optional **`note`** for the mobile payment description (shown in YATORI PAY when the customer scans or opens the link):
 
 ```html
@@ -101,7 +99,7 @@ QR codes and mobile deeplinks use the Yatori mobile request format with **`type=
 
 | Scenario | Example link |
 |----------|----------------|
-| Default (wallet + amount only) | `https://yatori.io/mobile/yatoriRequest?token=usdcBasic&to=G8RtxPyG2pdrAhrNRMgg7Hia8imCofdCYxvyWiNG14hx&amount=9.99&yid=4821a3b7&type=note&note=checkout` |
+| Default (wallet + amount only) | `https://yatori.io/mobile/yatoriRequest?to=G8RtxPyG2pdrAhrNRMgg7Hia8imCofdCYxvyWiNG14hx&amount=9.99&yid=4821a3b7&type=note&note=checkout` |
 | With `note="schfifty five"` | `...&type=note&note=schfifty+five` |
 
 - **`yid`** — Generated per QR session by the component (value changes each time).
@@ -260,7 +258,7 @@ export default function MyYatoriCheckout() {
 
 | Attribute | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
-| `wallet` | string | Yes | - | Recipient wallet address (Solana). Must have at least 0.01 USDC already deposited for rent (USDC PDA). |
+| `wallet` | string | Yes | - | Recipient wallet address (Solana). |
 | `amount` | number | Yes | - | Payment amount in USD decimal format (e.g., 9.99, must be between 0.01 and 9999.99) |
 | `note` | string | No | `checkout` | Payment note in the mobile link (`type=note`). Letters, numbers, and spaces only; max **50** characters (truncated if longer). Special characters are stripped. Will later align with the Yatori Merchant platform. |
 | `useDialog` | boolean | No | `true` | When `true` and not on mobile, displays a "YATORI PAY" button that opens a centered dialog with the QR code. When `false`, displays the QR code directly. On mobile devices, always shows the deeplink button regardless of this setting. |
@@ -355,6 +353,12 @@ yatori-checkout {
 Payable with the **YATORI PAY** mobile app. Available for download on the [Apple App Store](https://apps.apple.com/us/app/yatori-pay/id6736435772) or [Google Play Store](https://play.google.com/store/apps/details?id=io.yatori.app). More info: [https://yatori.io/yatori-pay](https://yatori.io/yatori-pay)
 
 ## Changelog
+
+### 1.3.1
+
+- Amount pill uses a solid soft primary fill + dark text so it stays readable on light and dark host backgrounds (especially embedded mode)
+- Removed `token=usdcBasic` from mobile payment links
+- Removed rent / pre-funded USDC wallet requirements from docs
 
 ### 1.3.0
 
